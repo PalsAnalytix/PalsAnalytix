@@ -3,7 +3,6 @@ import Modal from "react-modal";
 import { useDispatch } from "react-redux";
 import { addQuestion } from "../redux/slices/questionsSlice";
 import axios from "axios";
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const AddQuestionModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -23,6 +22,7 @@ const AddQuestionModal = ({ isOpen, onClose }) => {
   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const chapters = Array.from({ length: 40 }, (_, i) => `Chapter ${i + 1}`);
   const coursesList = ["SCR", "FRM", "CFA"];
@@ -81,7 +81,7 @@ const AddQuestionModal = ({ isOpen, onClose }) => {
     });
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage("");
@@ -101,35 +101,27 @@ const handleSubmit = async (e) => {
       return;
     }
   
-    const formData = new FormData();
+    const formData = {
+      questionStatement: questionData.questionStatement,
+      courses: questionData.courses,
+      chapter: questionData.chapter,
+      optionA: questionData.options[0],
+      optionB: questionData.options[1],
+      optionC: questionData.options[2],
+      optionD: questionData.options[3],
+      optionImage1: questionData.images[0],
+      optionImage2: questionData.images[1],
+      optionImage3: questionData.images[2],
+      optionImage4: questionData.images[3],
+      rightAnswer: questionData.rightAnswer,
+      explanation: questionData.explanation,
+      difficulty: questionData.difficulty,
+      tags: JSON.stringify(questionData.tags),
+      questionImage: questionData.questionImage,
+      explanationImage: questionData.explanationImage,
+    };
   
-    // Append text data
-    console.log(questionData.courses);
-    formData.append("questionStatement", questionData.questionStatement);
-    questionData.courses.forEach((course) => {
-      formData.append("courses[]", course);
-    });
-    formData.append("chapter", questionData.chapter);
-    questionData.options.forEach((option, index) => {
-      formData.append(`option${String.fromCharCode(65 + index)}`, option);
-    });
-    formData.append("rightAnswer", questionData.rightAnswer);
-    formData.append("explanation", questionData.explanation);
-    formData.append("difficulty", questionData.difficulty);
-    formData.append("tags", (questionData.tags)); // Convert tags to JSON
-  
-    // Append file data
-    if (questionData.questionImage) {
-      formData.append("questionImage", questionData.questionImage);
-    }
-    questionData.images.forEach((image, index) => {
-      if (image) {
-        formData.append(`optionImage${index + 1}`, image);
-      }
-    });
-    if (questionData.explanationImage) {
-      formData.append("explanationImage", questionData.explanationImage);
-    }
+    console.log('Submitting question data:', formData); // Log the data being sent
   
     // Dispatch the Redux thunk to handle the API call
     const resultAction = await dispatch(addQuestion(formData));

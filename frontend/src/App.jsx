@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
+import CFAPage from "./pages/CFAPage";
+import SCRPage from './pages/SCRPage';
 
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
         <Route path="/test-series" element={<div>Test Series Page</div>} /> {/* Placeholder for now */}
         <Route path="/quizzes" element={<div>Quizzes Page</div>} /> {/* Placeholder for now */}
         <Route path="/news" element={<div>News Page</div>} /> {/* Placeholder for now */}
+        <Route path="/cfa" element={<CFAPage/>} /> {/* Placeholder for now */}
+        <Route path="/scr" element={<SCRPage/>} /> {/* Placeholder for now */}
       </Routes>
     </Router>
   );

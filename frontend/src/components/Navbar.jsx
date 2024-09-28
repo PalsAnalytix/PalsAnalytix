@@ -40,7 +40,7 @@ const Navbar = () => {
   }, [isAuthenticated, user]);
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-white shadow-lg border-b-2 border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
         <div className="flex items-center">
           <h1
@@ -51,17 +51,17 @@ const Navbar = () => {
           </h1>
         </div>
         <div className="flex items-center space-x-6">
-          <button onClick={() => handleNavigation('/exams')} className="text-gray-700 hover:text-blue-500">
-            Exams
+          <button onClick={() => handleNavigation('/scr')} className="text-gray-700 hover:text-blue-500">
+            SCR
           </button>
-          <button onClick={() => handleNavigation('/test-series')} className="text-gray-700 hover:text-blue-500">
+          <button onClick={() => handleNavigation('/cfa')} className="text-gray-700 hover:text-blue-500">
+            CFA
+          </button>
+          <button onClick={() => handleNavigation('/frm')} className="text-gray-700 hover:text-blue-500">
+            FRM
+          </button>
+          <button onClick={() => handleNavigation('/tests')} className="text-gray-700 hover:text-blue-500">
             Test Series
-          </button>
-          <button onClick={() => handleNavigation('/quizzes')} className="text-gray-700 hover:text-blue-500">
-            Quizzes
-          </button>
-          <button onClick={() => handleNavigation('/news')} className="text-gray-700 hover:text-blue-500">
-            News
           </button>
         </div>
         <div className="flex items-center relative">

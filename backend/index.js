@@ -1,3 +1,4 @@
+const AWS = require('aws-sdk');
 const cors = require("cors");
 const express = require("express");
 const app = express();
@@ -8,19 +9,27 @@ app.use(express.json());
 const connectDB = require("./config/db");
 const User = require("./models/User");
 const Question = require('./models/Question');  
-const multerUpload = require('./config/multerconfig');
-const path = require('path'); 
-const fs = require('fs');
-const xlsx = require('xlsx');
-// const authRoutes = require("./routes/authRoutes")
+const path = require('path');
+const upload = require("./config/s3Config");
+
+const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+dotenv.config();
+
+// Configure AWS
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
+
+const s3 = new AWS.S3();
 
 connectDB();
 
 dotenv.config();
 
 // app.use('/api', authRoutes);
-
-
 app.post("/registerdb", async (req,res) => {
     const { name, email, sub:auth0ID } = req.body;
   try {
@@ -40,67 +49,8 @@ app.post("/registerdb", async (req,res) => {
   }
 });
 
-// app.post('/upload-questions', upload.single('file'), async (req, res) => {
-//   try {
-//     const workbook = xlsx.readFile(req.file.path);
-//     const sheetName = workbook.SheetNames[0];
-//     const sheet = workbook.Sheets[sheetName];
-//     const data = xlsx.utils.sheet_to_json(sheet);
-
-//     // Transform data into an array of Question documents
-//     const questions = data.map((row) => ({
-//       srNo: row['Sr No.'],
-//       questionStatement: row['Question Statement'],
-//       options: {
-//         A: row['Option A'],
-//         B: row['Option B'],
-//         C: row['Option C'],
-//         D: row['Option D'],
-//       },
-//       rightAnswer: row['Right Answer'],
-//       explanation: row['Explanation'],
-//       difficulty: row['Difficulty'],
-//       subjects: {
-//         SCR: row['SCR?'] === 1,
-//         FRM: row['FRM?'] === 1,
-//         CFA: row['CFA?'] === 1,
-//       },
-//       chapter: row['Chapter'],  // Make sure your Excel file includes this if relevant
-//     }));
-
-//     // Insert the questions into the MongoDB collection
-//     await Question.insertMany(questions);
-
-//     res.status(200).send('File uploaded and questions stored successfully!');
-//   } catch (error) {
-//     res.status(500).send('Error storing questions: ' + error.message);
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // admin backend
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));//uploads middleware
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));//uploads middleware
 
 const isAdmin = (req, res, next) => {
   const user = req.user; // Assuming user info is attached to req via authentication middleware
@@ -113,7 +63,7 @@ const isAdmin = (req, res, next) => {
 };
 
 // Add a question with optional images
-app.post('/addquestion',multerUpload.fields([
+app.post('/addquestion', upload.fields([
   { name: 'questionImage', maxCount: 1 },
   { name: 'optionImage1', maxCount: 1 },
   { name: 'optionImage2', maxCount: 1 },
@@ -123,29 +73,31 @@ app.post('/addquestion',multerUpload.fields([
 ]), async (req, res) => {
   try {
     const { body, files } = req;
-
+    
+    // Create a new question object
     const newQuestion = new Question({
-      courses: body.courses,
+      courses: Array.isArray(body.courses) ? body.courses : [body.courses],
       chapterName: body.chapter,
       questionStatement: body.questionStatement,
-      questionImage: files.questionImage ? `/uploads/${files.questionImage[0].filename}` : null,
+      questionImage: files.questionImage ? files.questionImage[0].location : null,
       options: {
         optionA: body.optionA,
-        optionAImage: files.optionImage1 ? `/uploads/${files.optionImage1[0].filename}` : null,
+        optionAImage: files.optionImage1 ? files.optionImage1[0].location : null,
         optionB: body.optionB,
-        optionBImage: files.optionImage2 ? `/uploads/${files.optionImage2[0].filename}` : null,
+        optionBImage: files.optionImage2 ? files.optionImage2[0].location : null,
         optionC: body.optionC,
-        optionCImage: files.optionImage3 ? `/uploads/${files.optionImage3[0].filename}` : null,
+        optionCImage: files.optionImage3 ? files.optionImage3[0].location : null,
         optionD: body.optionD,
-        optionDImage: files.optionImage4 ? `/uploads/${files.optionImage4[0].filename}` : null,
+        optionDImage: files.optionImage4 ? files.optionImage4[0].location : null,
       },
       rightAnswer: body.rightAnswer,
       explanation: body.explanation,
-      explanationImage: files.explanationImage ? `/uploads/${files.explanationImage[0].filename}` : null,
+      explanationImage: files.explanationImage ? files.explanationImage[0].location : null,
       difficulty: body.difficulty,
-      tags: body.tags ? body.tags.split(',').map(tag => tag.trim()) : []
+      tags: body.tags ? JSON.parse(body.tags) : []
     });
 
+    // Save question to database
     await newQuestion.save();
     res.status(201).json(newQuestion);
   } catch (error) {
@@ -153,6 +105,9 @@ app.post('/addquestion',multerUpload.fields([
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
 
 
 app.get('/questions' , async (req, res) => {

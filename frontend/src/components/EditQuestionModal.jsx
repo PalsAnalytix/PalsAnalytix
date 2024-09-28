@@ -105,7 +105,7 @@ const EditQuestionModal = ({ isOpen, onClose, question, onSave }) => {
             />
             {editedQuestion.questionImage && (
               <img
-                src={`${BASE_URL}${editedQuestion.questionImage}`}
+                src={`${editedQuestion.questionImage}`}
                 alt="Question"
                 className="max-h-40 object-contain"
               />
@@ -177,7 +177,7 @@ const EditQuestionModal = ({ isOpen, onClose, question, onSave }) => {
               />
               {editedQuestion.options[`option${letter}Image`] && (
                 <img
-                  src={`${BASE_URL}${
+                  src={`${
                     editedQuestion.options[`option${letter}Image`]
                   }`}
                   alt={`Option ${letter}`}
@@ -228,7 +228,7 @@ const EditQuestionModal = ({ isOpen, onClose, question, onSave }) => {
             />
             {editedQuestion.explanationImage && (
               <img
-                src={`${BASE_URL}${editedQuestion.explanationImage}`}
+                src={`${editedQuestion.explanationImage}`}
                 alt="Explanation"
                 className="max-h-40 object-contain"
               />
