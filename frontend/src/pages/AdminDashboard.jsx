@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import EditQuestionModal from "../components/EditQuestionModal";
 import AddQuestionModal from "../components/AddQuestionModal";
+import TestModal from "../components/TestModal";
 const BASE_URL = import.meta.env.VITE_BASE_URL; // Make sure this is correctly set up
 
 const Navbar = () => {
@@ -81,6 +82,7 @@ const AdminDashboard = () => {
   const stats = useSelector((state) => state.questions.stats);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [questionToDelete, setQuestionToDelete] = useState(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -188,14 +190,25 @@ const AdminDashboard = () => {
         </div>
 
         {/* Add Question Button */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end">
+        <div className="flex justify-end mb-4 mr-4">
           <button
-            className="bg-blue-500 text-white py-2 px-4 rounded shadow"
+            className="bg-blue-500 hover:bg-blue-800 text-white py-2 px-4 rounded shadow"
             onClick={() => setIsAddModalOpen(true)}
           >
             Add New Question
           </button>
         </div>
+        <div className="flex justify-end mb-4">
+          <button
+            className="bg-blue-500 hover:bg-blue-800 text-white py-2 px-4 rounded shadow"
+            onClick={() => setIsTestModalOpen(true)}
+          >
+            Add New Test
+          </button>
+        </div>
+        </div>
+        
 
         {/* Tags Section */}
         <div className="flex flex-wrap gap-2 mb-6">
@@ -278,7 +291,7 @@ const AdminDashboard = () => {
                     {question.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-block bg-green-100 text-green-800 rounded-full px-2 py-1 text-xs sm:text-sm font-semibold mr-1 mb-1 sm:mr-2 sm:mb-2"
+                        className="inline-block text-green-800 rounded-full px-2 py-1 text-xs sm:text-sm font-bold mr-1 mb-1 sm:mr-2 sm:mb-2"
                       >
                         {tag}
                       </span>
@@ -347,6 +360,10 @@ const AdminDashboard = () => {
             question={selectedQuestion}
             // onSave={handleSaveQuestion}
           />
+        )}
+
+        { (
+          <TestModal isOpen={isTestModalOpen} onClose={()=>{setIsTestModalOpen(false)}} />
         )}
 
         {/* Delete Confirmation Modal */}

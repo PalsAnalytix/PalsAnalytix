@@ -6,6 +6,8 @@ import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CFAPage from "./pages/CFAPage";
 import SCRPage from './pages/SCRPage';
+import UserDashboard from './pages/UserDashboard';
+import TestSeries from './pages/testSeries';
 
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
         <Route path="/news" element={<div>News Page</div>} /> {/* Placeholder for now */}
         <Route path="/cfa" element={<CFAPage/>} /> {/* Placeholder for now */}
         <Route path="/scr" element={<SCRPage/>} /> {/* Placeholder for now */}
+        <Route path="/dashboard" element={<UserDashboard/>} /> {/* Placeholder for now */}
+        <Route path="/testseries" element={<TestSeries/>} /> {/* Placeholder for now */}
       </Routes>
     </Router>
   );

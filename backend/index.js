@@ -9,6 +9,7 @@ app.use(express.json());
 const connectDB = require("./config/db");
 const User = require("./models/User");
 const Question = require('./models/Question');  
+const Test = require('./models/Test');
 const path = require('path');
 const upload = require("./config/s3Config");
 
@@ -144,6 +145,75 @@ app.delete('/question/:id' , async (req, res) => {
     res.status(200).json({ message: 'Question deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+// tests routes
+
+app.post('/tests', async (req, res) => {
+  try {
+    const newTest = new Test(req.body);
+    await newTest.save();
+    res.status(201).json(newTest);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
+// GET /tests - Fetch all tests
+app.get('/tests', async (req, res) => {
+  try {
+    const tests = await Test.find();
+    res.status(200).json(tests);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
+// GET /tests/:id - Fetch a single test by ID
+app.get('tests/:id', async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+    res.status(200).json(test);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
+// PUT /tests/:id - Update a test by ID
+app.put('tests/:id', async (req, res) => {
+  try {
+    const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedTest) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+    res.status(200).json(updatedTest);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error', error: err.message });
+  }
+});
+
+// DELETE /tests/:id - Delete a test by ID
+app.delete('tests/:id', async (req, res) => {
+  try {
+    const deletedTest = await Test.findByIdAndDelete(req.params.id);
+    if (!deletedTest) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+    res.status(200).json({ message: 'Test deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error', error: err.message });
   }
 });
 

@@ -60,7 +60,7 @@ const Navbar = () => {
           <button onClick={() => handleNavigation('/frm')} className="text-gray-700 hover:text-blue-500">
             FRM
           </button>
-          <button onClick={() => handleNavigation('/tests')} className="text-gray-700 hover:text-blue-500">
+          <button onClick={() => handleNavigation('/testseries')} className="text-gray-700 hover:text-blue-500">
             Test Series
           </button>
         </div>

@@ -8,7 +8,7 @@ export const fetchQuestions = createAsyncThunk(
   async () => {
     try {
       const response = await axios.get(`${BASE_URL}/questions`);
-    //   console.log("Axios response:", response); // Log the full response object
+      console.log("Axios response:", response); // Log the full response object
       return response.data; // This should contain the questions
     } catch (error) {
       console.error("Error fetching questions:", error); // Log the error for debugging
@@ -93,8 +93,17 @@ const questionsSlice = createSlice({
       scrCount: 0,
       cfaCount: 0,
     },
+    activeTab: 'questions', // Add activeTab to manage tab selection
   },
-  reducers: {},
+  reducers: {
+    setActiveTab: (state, action) => {
+      state.activeTab = action.payload;
+    },
+    setAvailableQuestions: (state, action) => {
+      state.items = action.payload;
+      state.stats = calculateStats(state.items);  // Update stats when new questions are loaded
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchQuestions.pending, (state) => {
@@ -111,7 +120,6 @@ const questionsSlice = createSlice({
       })
       .addCase(addQuestion.pending, (state) => {
         state.status = 'loading';
-        
       })
       .addCase(addQuestion.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -135,5 +143,7 @@ const questionsSlice = createSlice({
       });
   },
 });
+
+export const { setActiveTab, setAvailableQuestions } = questionsSlice.actions;
 
 export default questionsSlice.reducer;
