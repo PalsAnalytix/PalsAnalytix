@@ -23,10 +23,15 @@ const testsSlice = createSlice({
   name: 'tests',
   initialState: {
     tests: [],
+    selectedTestId:null,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    setSelectedTest: (state, action) => {
+      state.selectedTestId = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTests.pending, (state) => {
@@ -49,6 +54,8 @@ const testsSlice = createSlice({
       });
   },
 });
+
+export const { setSelectedTest } = testsSlice.actions;
 
 export default testsSlice.reducer;
 

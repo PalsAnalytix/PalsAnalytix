@@ -8,6 +8,7 @@ import CFAPage from "./pages/CFAPage";
 import SCRPage from './pages/SCRPage';
 import UserDashboard from './pages/UserDashboard';
 import TestSeries from './pages/testSeries';
+import TestPage from './pages/TestPage';
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/scr" element={<SCRPage/>} /> {/* Placeholder for now */}
         <Route path="/dashboard" element={<UserDashboard/>} /> {/* Placeholder for now */}
         <Route path="/testseries" element={<TestSeries/>} /> {/* Placeholder for now */}
+        <Route path="/test/:id" element={<TestPage/>} /> {/* Placeholder for now */}
       </Routes>
     </Router>
   );

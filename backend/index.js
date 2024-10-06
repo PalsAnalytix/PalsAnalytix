@@ -1,19 +1,23 @@
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 const cors = require("cors");
 const express = require("express");
 const app = express();
 const PORT = 3000;
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 app.use(cors());
 app.use(express.json());
 const connectDB = require("./config/db");
 const User = require("./models/User");
-const Question = require('./models/Question');  
-const Test = require('./models/Test');
-const path = require('path');
+const Question = require("./models/Question");
+const Test = require("./models/Test");
+const path = require("path");
 const upload = require("./config/s3Config");
 
-const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  GetObjectCommand,
+  PutObjectCommand,
+} = require("@aws-sdk/client-s3");
 
 dotenv.config();
 
@@ -21,7 +25,7 @@ dotenv.config();
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+  region: process.env.AWS_REGION,
 });
 
 const s3 = new AWS.S3();
@@ -31,8 +35,8 @@ connectDB();
 dotenv.config();
 
 // app.use('/api', authRoutes);
-app.post("/registerdb", async (req,res) => {
-    const { name, email, sub:auth0ID } = req.body;
+app.post("/registerdb", async (req, res) => {
+  const { name, email, sub: auth0ID } = req.body;
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
@@ -46,7 +50,7 @@ app.post("/registerdb", async (req,res) => {
     res.status(201).json({ user });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ message: "Server Error", error });
   }
 });
 
@@ -59,67 +63,87 @@ const isAdmin = (req, res, next) => {
   if (user.email === process.env.ADMIN_EMAIL) {
     next();
   } else {
-    return res.status(403).json({ message: 'Access denied. Admins only.' });
+    return res.status(403).json({ message: "Access denied. Admins only." });
   }
 };
 
 // Add a question with optional images
-app.post('/addquestion', upload.fields([
-  { name: 'questionImage', maxCount: 1 },
-  { name: 'optionImage1', maxCount: 1 },
-  { name: 'optionImage2', maxCount: 1 },
-  { name: 'optionImage3', maxCount: 1 },
-  { name: 'optionImage4', maxCount: 1 },
-  { name: 'explanationImage', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const { body, files } = req;
-    
-    // Create a new question object
-    const newQuestion = new Question({
-      courses: Array.isArray(body.courses) ? body.courses : [body.courses],
-      chapterName: body.chapter,
-      questionStatement: body.questionStatement,
-      questionImage: files.questionImage ? files.questionImage[0].location : null,
-      options: {
-        optionA: body.optionA,
-        optionAImage: files.optionImage1 ? files.optionImage1[0].location : null,
-        optionB: body.optionB,
-        optionBImage: files.optionImage2 ? files.optionImage2[0].location : null,
-        optionC: body.optionC,
-        optionCImage: files.optionImage3 ? files.optionImage3[0].location : null,
-        optionD: body.optionD,
-        optionDImage: files.optionImage4 ? files.optionImage4[0].location : null,
-      },
-      rightAnswer: body.rightAnswer,
-      explanation: body.explanation,
-      explanationImage: files.explanationImage ? files.explanationImage[0].location : null,
-      difficulty: body.difficulty,
-      tags: body.tags ? JSON.parse(body.tags) : []
-    });
+app.post(
+  "/addquestion",
+  upload.fields([
+    { name: "questionImage", maxCount: 1 },
+    { name: "optionImage1", maxCount: 1 },
+    { name: "optionImage2", maxCount: 1 },
+    { name: "optionImage3", maxCount: 1 },
+    { name: "optionImage4", maxCount: 1 },
+    { name: "explanationImage", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { body, files } = req;
 
-    // Save question to database
-    await newQuestion.save();
-    res.status(201).json(newQuestion);
-  } catch (error) {
-    console.error('Error adding question:', error);
-    res.status(500).json({ error: error.message });
+      // Create a new question object
+      const newQuestion = new Question({
+        courses: Array.isArray(body.courses) ? body.courses : [body.courses],
+        chapterName: body.chapter,
+        questionStatement: body.questionStatement,
+        questionImage: files.questionImage
+          ? files.questionImage[0].location
+          : null,
+        options: {
+          optionA: body.optionA,
+          optionAImage: files.optionImage1
+            ? files.optionImage1[0].location
+            : null,
+          optionB: body.optionB,
+          optionBImage: files.optionImage2
+            ? files.optionImage2[0].location
+            : null,
+          optionC: body.optionC,
+          optionCImage: files.optionImage3
+            ? files.optionImage3[0].location
+            : null,
+          optionD: body.optionD,
+          optionDImage: files.optionImage4
+            ? files.optionImage4[0].location
+            : null,
+        },
+        rightAnswer: body.rightAnswer,
+        explanation: body.explanation,
+        explanationImage: files.explanationImage
+          ? files.explanationImage[0].location
+          : null,
+        difficulty: body.difficulty,
+        tags: body.tags ? JSON.parse(body.tags) : [],
+      });
+
+      // Save question to database
+      await newQuestion.save();
+      res.status(201).json(newQuestion);
+    } catch (error) {
+      console.error("Error adding question:", error);
+      res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
-
-
-
-
-app.get('/questions' , async (req, res) => {
+app.get("/questions", async (req, res) => {
   try {
-    const { course, chapter } = req.query;
-    const filter = {};
+    const { ids } = req.query; // ids will be a comma-separated string
+    let questions;
+    if (ids) {
+      const questionsArray = ids.split(","); // Split the ids into an array
+      // Fetch only the questions that match the provided IDs
+      questions = await Question.find({ _id: { $in: questionsArray } });
+    } else {
+      const { course, chapter } = req.query;
+      const filter = {};
 
-    if (course) filter.course = course;
-    if (chapter) filter.chapterName = chapter;
+      if (course) filter.course = course;
+      if (chapter) filter.chapterName = chapter;
 
-    const questions = await Question.find(filter);
+      questions = await Question.find(filter);
+    }
     res.status(200).json(questions);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -127,10 +151,12 @@ app.get('/questions' , async (req, res) => {
 });
 
 // Update a question
-app.put('/question/:id' , async (req, res) => {
+app.put("/question/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedQuestion = await Question.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedQuestion = await Question.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     res.status(200).json(updatedQuestion);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -138,82 +164,76 @@ app.put('/question/:id' , async (req, res) => {
 });
 
 // Delete a question
-app.delete('/question/:id' , async (req, res) => {
+app.delete("/question/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await Question.findByIdAndDelete(id);
-    res.status(200).json({ message: 'Question deleted' });
+    res.status(200).json({ message: "Question deleted" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
-
-
-
-
-
-
-
 // tests routes
 
-app.post('/tests', async (req, res) => {
+app.post("/tests", async (req, res) => {
   try {
     const newTest = new Test(req.body);
     await newTest.save();
     res.status(201).json(newTest);
   } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
 // GET /tests - Fetch all tests
-app.get('/tests', async (req, res) => {
+app.get("/tests", async (req, res) => {
   try {
     const tests = await Test.find();
     res.status(200).json(tests);
   } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
 // GET /tests/:id - Fetch a single test by ID
-app.get('tests/:id', async (req, res) => {
+app.get("/tests/:id", async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) {
-      return res.status(404).json({ message: 'Test not found' });
+      return res.status(404).json({ message: "Test not found" });
     }
     res.status(200).json(test);
   } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
 // PUT /tests/:id - Update a test by ID
-app.put('tests/:id', async (req, res) => {
+app.put("/tests/:id", async (req, res) => {
   try {
-    const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!updatedTest) {
-      return res.status(404).json({ message: 'Test not found' });
+      return res.status(404).json({ message: "Test not found" });
     }
     res.status(200).json(updatedTest);
   } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
 // DELETE /tests/:id - Delete a test by ID
-app.delete('tests/:id', async (req, res) => {
+app.delete("/tests/:id", async (req, res) => {
   try {
     const deletedTest = await Test.findByIdAndDelete(req.params.id);
     if (!deletedTest) {
-      return res.status(404).json({ message: 'Test not found' });
+      return res.status(404).json({ message: "Test not found" });
     }
-    res.status(200).json({ message: 'Test deleted successfully' });
+    res.status(200).json({ message: "Test deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 

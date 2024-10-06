@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "../components/Navbar";
+import CFACurriculumSection from "../components/CFACurriculumSection";
 
 const CfaPage = () => {
   return (
@@ -85,53 +86,7 @@ const CfaPage = () => {
           </ul>
         </section>
         {/* Curriculum Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-blue-800 mb-4">
-            CFA® Exam Curriculum
-          </h2>
-          <div className="space-y-6">
-            <div className="p-4 bg-gray-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold text-gray-800">
-                1. Ethical and Professional Standards
-              </h3>
-              <p className="mt-2 text-gray-600">Exam Weight: 15%</p>
-              <ul className="list-disc mt-2 ml-6 text-gray-700">
-                <li>
-                  Understand ethical responsibilities and professionalism in the
-                  financial industry.
-                </li>
-                <li>
-                  Learn the importance of integrity and investor protection.
-                </li>
-                <li>
-                  Study real-world case scenarios in investment management.
-                </li>
-              </ul>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold text-gray-800">
-                2. Quantitative Methods
-              </h3>
-              <p className="mt-2 text-gray-600">Exam Weight: 10%</p>
-              <ul className="list-disc mt-2 ml-6 text-gray-700">
-                <li>
-                  Learn statistical methods and data analysis for financial
-                  markets.
-                </li>
-                <li>
-                  Study probability distributions, hypothesis testing, and
-                  regression analysis.
-                </li>
-                <li>
-                  Understand risk management using quantitative techniques.
-                </li>
-              </ul>
-            </div>
-
-            {/* Add more curriculum topics similarly */}
-          </div>
-        </section>
+        <CFACurriculumSection/>
         {/* Call to Action Section */}
         <section className="text-center mb-8">
           <h3 className="text-xl font-semibold text-gray-800">
