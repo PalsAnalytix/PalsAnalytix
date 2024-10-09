@@ -36,14 +36,24 @@ dotenv.config();
 
 // app.use('/api', authRoutes);
 app.post("/registerdb", async (req, res) => {
-  const { name, email, sub: auth0ID } = req.body;
+  const { name, email, sub: auth0ID, picture } = req.body;
+  const phoneNo = "";
+  const attemptedQuestions = [];
+  const attemptedTests = [];
+  const subscriptionId = "";
+  const purchaseDate = "";
+  const expiryDate = "";
+  const amountPaid = 0;
+  const paymentId = "";
+  const currentChapterForWhatsapp = "";
+  const currentCourseForWhatsapp = "";
   try {
     // Check if the user already exists
     let user = await User.findOne({ email });
 
     if (!user) {
       // Create a new user
-      user = new User({ name, email, auth0ID });
+      user = new User({ name, email, auth0ID, phoneNo,picture, attemptedQuestions, attemptedTests, subscriptionId, purchaseDate, expiryDate, paymentId, amountPaid, currentChapterForWhatsapp, currentCourseForWhatsapp });
       await user.save();
     }
 
@@ -51,6 +61,25 @@ app.post("/registerdb", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server Error", error });
+  }
+});
+
+app.get("/user/:auth0ID", async (req, res) => {
+  try {
+    const { auth0ID } = req.params;
+
+    // Find the user in the database
+    const user = await User.findOne({ auth0ID });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the user details
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -149,6 +178,46 @@ app.get("/questions", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+//get questions in bulk
+app.post('/getQuestionsByIds', async (req, res) => {
+  try {
+    const {ids}  = req.body; // Expecting an array of objects like [{ questionId, attemptedOption, timeTaken }, ...]
+    console.log(req.body);
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Invalid request. Please provide an array of question details.' });
+    }
+
+    // Step 1: Extract question IDs from the array of objects
+    const questionIds = ids.map(item => item.questionId);
+
+    // Step 2: Fetch questions in bulk using MongoDB's $in operator
+    const questions = await Question.find({ _id: { $in: questionIds } });
+
+    // Step 3: Create the response combining question details with the user's attempted data
+    const result = ids.map(item => {
+      const questionDetail = questions.find(q => q._id.toString() === item.questionId);
+      if (questionDetail) {
+        const verdict = item.attemptedOption === questionDetail.rightAnswer ? 'Right' : 'Wrong';
+        return {
+          ...questionDetail.toObject(), // Spread the question details
+          attemptedOption: item.attemptedOption,
+          timeTaken: item.timeTaken,
+          verdict,
+        };
+      } else {
+        return { error: `Question with ID ${item.questionId} not found.` };
+      }
+    });
+
+    // Step 4: Send the response back to the client
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    res.status(500).json({ error: 'An error occurred while fetching questions.' });
+  }
+});
+
 
 // Update a question
 app.put("/question/:id", async (req, res) => {

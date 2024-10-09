@@ -24,6 +24,7 @@ const Navbar = () => {
       if (isAuthenticated && user) {
         try {
           // Send the user data to your backend
+          console.log(user);
           const response = await axios.post(`${BASE_URL}/registerdb`, user);
           if(response.data.user.email === ADMIN_EMAIL){
             console.log(response.data.user.email);
