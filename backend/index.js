@@ -12,29 +12,29 @@ const Question = require("./models/Question");
 const Test = require("./models/Test");
 const path = require("path");
 const upload = require("./config/s3Config");
+dotenv.config();
 
+
+
+connectDB(); 
+
+
+// AWS
 const {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
-
-dotenv.config();
-
-// Configure AWS
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
-
 const s3 = new AWS.S3();
 
-connectDB();
 
-dotenv.config();
 
-// app.use('/api', authRoutes);
+//post routes
 app.post("/registerdb", async (req, res) => {
   const { name, email, sub: auth0ID, picture } = req.body;
   const phoneNo = "";
@@ -64,39 +64,6 @@ app.post("/registerdb", async (req, res) => {
   }
 });
 
-app.get("/user/:auth0ID", async (req, res) => {
-  try {
-    const { auth0ID } = req.params;
-
-    // Find the user in the database
-    const user = await User.findOne({ auth0ID });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Return the user details
-    res.status(200).json(user);
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-// admin backend
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));//uploads middleware
-
-const isAdmin = (req, res, next) => {
-  const user = req.user; // Assuming user info is attached to req via authentication middleware
-
-  if (user.email === process.env.ADMIN_EMAIL) {
-    next();
-  } else {
-    return res.status(403).json({ message: "Access denied. Admins only." });
-  }
-};
-
-// Add a question with optional images
 app.post(
   "/addquestion",
   upload.fields([
@@ -156,30 +123,7 @@ app.post(
   }
 );
 
-app.get("/questions", async (req, res) => {
-  try {
-    const { ids } = req.query; // ids will be a comma-separated string
-    let questions;
-    if (ids) {
-      const questionsArray = ids.split(","); // Split the ids into an array
-      // Fetch only the questions that match the provided IDs
-      questions = await Question.find({ _id: { $in: questionsArray } });
-    } else {
-      const { course, chapter } = req.query;
-      const filter = {};
 
-      if (course) filter.course = course;
-      if (chapter) filter.chapterName = chapter;
-
-      questions = await Question.find(filter);
-    }
-    res.status(200).json(questions);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-//get questions in bulk
 app.post('/getQuestionsByIds', async (req, res) => {
   try {
     const {ids}  = req.body; // Expecting an array of objects like [{ questionId, attemptedOption, timeTaken }, ...]
@@ -218,33 +162,6 @@ app.post('/getQuestionsByIds', async (req, res) => {
   }
 });
 
-
-// Update a question
-app.put("/question/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedQuestion = await Question.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-    res.status(200).json(updatedQuestion);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Delete a question
-app.delete("/question/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    await Question.findByIdAndDelete(id);
-    res.status(200).json({ message: "Question deleted" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// tests routes
-
 app.post("/tests", async (req, res) => {
   try {
     const newTest = new Test(req.body);
@@ -252,6 +169,62 @@ app.post("/tests", async (req, res) => {
     res.status(201).json(newTest);
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+//get routes
+
+app.get("/user/:auth0ID", async (req, res) => {
+  try {
+    const { auth0ID } = req.params;
+
+    // Find the user in the database
+    const user = await User.findOne({ auth0ID });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the user details
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/questions", async (req, res) => {
+  try {
+    const { ids } = req.query; // ids will be a comma-separated string
+    let questions;
+    if (ids) {
+      const questionsArray = ids.split(","); // Split the ids into an array
+      // Fetch only the questions that match the provided IDs
+      questions = await Question.find({ _id: { $in: questionsArray } });
+    } else {
+      const { course, chapter } = req.query;
+      const filter = {};
+
+      if (course) filter.course = course;
+      if (chapter) filter.chapterName = chapter;
+
+      questions = await Question.find(filter);
+    }
+    res.status(200).json(questions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -278,7 +251,63 @@ app.get("/tests/:id", async (req, res) => {
   }
 });
 
-// PUT /tests/:id - Update a test by ID
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//put routes
+
+app.put("/user/:auth0ID/whatsapp", async (req, res) => {
+  try {
+    const { auth0ID } = req.params;
+    const { phoneNo, currentChapterForWhatsapp, currentCourseForWhatsapp } = req.body;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { auth0ID },
+      { phoneNo, currentChapterForWhatsapp, currentCourseForWhatsapp },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send welcome message via WhatsApp
+    // const whatsappApiUrl = 'https://api.whatsapp.com/v1/messages';
+    // const whatsappToken = process.env.WHATSAPP_API_TOKEN;
+
+    // await axios.post(whatsappApiUrl, {
+    //   to: phoneNo,
+    //   type: 'text',
+    //   text: {
+    //     body: `Welcome to our service! You're now subscribed to ${currentCourseForWhatsapp} updates, starting from ${currentChapterForWhatsapp}.`
+    //   }
+    // }, {
+    //   headers: {
+    //     'Authorization': `Bearer ${whatsappToken}`,
+    //     'Content-Type': 'application/json'
+    //   }
+    // });
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user WhatsApp details:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 app.put("/tests/:id", async (req, res) => {
   try {
     const updatedTest = await Test.findByIdAndUpdate(req.params.id, req.body, {
@@ -293,7 +322,41 @@ app.put("/tests/:id", async (req, res) => {
   }
 });
 
-// DELETE /tests/:id - Delete a test by ID
+
+// Update a question
+app.put("/question/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedQuestion = await Question.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    res.status(200).json(updatedQuestion);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a question
+app.delete("/question/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Question.findByIdAndDelete(id);
+    res.status(200).json({ message: "Question deleted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+//delete routes
+
 app.delete("/tests/:id", async (req, res) => {
   try {
     const deletedTest = await Test.findByIdAndDelete(req.params.id);

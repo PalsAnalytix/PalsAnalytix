@@ -47,6 +47,19 @@ export const fetchBulkQuestionDetails = createAsyncThunk(
   }
 );
 
+export const updateUserWhatsAppDetails = createAsyncThunk(
+  'user/updateUserWhatsAppDetails',
+  async ({ phoneNo, currentChapterForWhatsapp, currentCourseForWhatsapp }, { getState }) => {
+    const { auth0ID } = getState().userDetails;
+    const response = await axios.put(`${BASE_URL}/user/${auth0ID}/whatsapp`, {
+      phoneNo,
+      currentChapterForWhatsapp,
+      currentCourseForWhatsapp,
+    });
+    return response.data;
+  }
+);
+
 // Helper function to calculate question stats based on course types
 const calculateQuestionStats = (questions) => {
   const questionStats = { CFA: 0, FRM: 0, SCR: 0, Total: 0, Right: 0 };
@@ -134,6 +147,9 @@ const userSlice = createSlice({
       .addCase(fetchBulkQuestionDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(updateUserWhatsAppDetails.fulfilled, (state, action) => {
+        Object.assign(state, action.payload);
       });
   },
 });
